@@ -3,13 +3,19 @@ package com.maz.artspace
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -24,11 +30,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.maz.artspace.ui.theme.ArtSpaceTheme
 
 class MainActivity : ComponentActivity() {
@@ -64,9 +73,17 @@ fun ArtSpaceLayout() {
         1 -> R.string.hand
         2 -> R.string.fred
         3 -> R.string.tupac
-        4 -> R.string.hand
+        4 -> R.string.shawty
         5 -> R.string.mc_ride
         else -> R.string.me_basically
+    }
+    val imageTitle = when (currentImage) {
+        1 -> "Trippy Hand"
+        2 -> "Fred Absolutely Smacked"
+        3 -> "Tupac"
+        4 -> "Some Shawty"
+        5 -> "MC Ride"
+        else -> "Me, Basically"
     }
 
     Scaffold(
@@ -89,30 +106,57 @@ fun ArtSpaceLayout() {
                 .background(MaterialTheme.colorScheme.background)
         ){
             Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier
+                   .fillMaxSize()
+                   .padding(innerPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
             ) {
-                ArtPieceAndButtons(imageResource = imageResourceID, imageDescription = imageDescriptionID)
+                ArtPieceAndDescription(imageResource = imageResourceID, imageDescription = imageDescriptionID, imageTitle = imageTitle)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
+                    Button(onClick = { currentImage-- }, modifier = Modifier.padding(16.dp)) {
+                        Text(text = "Previous")
+                    }
+                    Button(onClick = { currentImage++ }, modifier = Modifier.padding(16.dp)) {
+                        Text(text = "Next", Modifier.padding(12.dp,0.dp))
+                    }
+                }
             }
+
         }
     }
 }
 
 @Composable
-fun ArtPieceAndButtons(imageResource: Int, imageDescription: Int, modifier: Modifier = Modifier) {
-    Box(modifier = modifier) {
+fun ArtPieceAndDescription(imageResource: Int, imageDescription: Int, imageTitle: String, modifier: Modifier = Modifier) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize()
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(painter = painterResource(imageResource), contentDescription = null,
-                modifier = Modifier
-                    .padding(24.dp)
-            )
+            Surface(    // creates surface the image lies inside
+                shadowElevation = 16.dp,
+                border = BorderStroke(3.dp, color = Color.DarkGray)
+            ) {
+                Image(painter = painterResource(imageResource), contentDescription = stringResource(imageDescription),
+                    modifier = modifier
+                        .padding(16.dp) // padding to stop the border cutting into the image.
+                )
+            }
+            Spacer(modifier = Modifier.height(40.dp))
+            Surface() {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                       .padding(16.dp)
+                ) {
+                    Text(text = imageTitle, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                    Text(text = stringResource(id = imageDescription), textAlign = TextAlign.Justify, modifier = modifier.padding(top = 8.dp, start = 50.dp, end = 50.dp))
+                }
+
+            }
+
         }
-    }
+
 }
 
 @Preview

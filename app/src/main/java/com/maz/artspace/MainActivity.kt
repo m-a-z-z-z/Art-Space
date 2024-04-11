@@ -1,5 +1,6 @@
 package com.maz.artspace
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +42,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.maz.artspace.ui.theme.ArtSpaceTheme
 
+/*
+ * TODO:
+ *  1. Add landscape orientation
+ *  2. Cycle back to the beginning when last art piece is reached, need to fix logic
+ *  3. Night mode
+ * 
+ */
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,29 +71,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ArtSpaceLayout() {
     var currentImage by remember { mutableStateOf(1) }
-    val imageResourceID = when (currentImage) {
-        1 -> R.drawable.hand
-        2 -> R.drawable.fred
-        3 -> R.drawable.tupac
-        4 -> R.drawable.shawty
-        5 -> R.drawable.mc_ride
-        else -> R.drawable.me_basically
-    }
-    val imageDescriptionID = when (currentImage) {
-        1 -> R.string.hand
-        2 -> R.string.fred
-        3 -> R.string.tupac
-        4 -> R.string.shawty
-        5 -> R.string.mc_ride
-        else -> R.string.me_basically
-    }
-    val imageTitle = when (currentImage) {
-        1 -> "Trippy Hand"
-        2 -> "Fred Absolutely Smacked"
-        3 -> "Tupac"
-        4 -> "Some Shawty"
-        5 -> "MC Ride"
-        else -> "Me, Basically"
+    val (imageResourceID, imageDescriptionID, imageTitle) = when (currentImage) {
+        1 -> Triple(R.drawable.hand, R.string.hand, "Trippy Hand")
+        2 -> Triple(R.drawable.fred, R.string.fred, "Fred Absolutely Smacked")
+        3 -> Triple(R.drawable.tupac, R.string.tupac, "Tupac")
+        4 -> Triple(R.drawable.shawty, R.string.shawty, "Some Shawty")
+        5 -> Triple(R.drawable.mc_ride, R.string.mc_ride, "MC Ride")
+        6 -> Triple(R.drawable.me_basically, R.string.me_basically, "Me, Basically")
+        else -> Triple(R.drawable.hand, R.string.hand, "Trippy Hand") // Default case
     }
 
     Scaffold(
@@ -105,24 +100,40 @@ fun ArtSpaceLayout() {
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.background)
         ){
-            Column(
+            LazyColumn(
                 modifier = Modifier
                    .fillMaxSize()
                    .padding(innerPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                ArtPieceAndDescription(imageResource = imageResourceID, imageDescription = imageDescriptionID, imageTitle = imageTitle)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-                    Button(onClick = { currentImage-- }, modifier = Modifier.padding(16.dp)) {
-                        Text(text = "Previous")
-                    }
-                    Button(onClick = { currentImage++ }, modifier = Modifier.padding(16.dp)) {
-                        Text(text = "Next", Modifier.padding(12.dp,0.dp))
-                    }
+                item {
+                    ArtPieceAndDescription(imageResource = imageResourceID, imageDescription = imageDescriptionID, imageTitle = imageTitle)
                 }
             }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
+                Button(
+                    onClick = {
+                        if (currentImage == 1) { // If you click previous on the first art piece, loop back to the last art piece
+                            currentImage = 6
+                        }
+                        else
+                            currentImage--
+                    },
+                    modifier = Modifier.padding(16.dp)
+                ) { Text(text = "Previous") }
 
+                Button(
+                    onClick = {
+                        if (currentImage == 6) { // If you click next on the last art piece, loop back to the first art piece
+                            currentImage = 1
+                        }
+                        else
+                            currentImage++
+                    },
+                    modifier = Modifier.padding(16.dp)
+                ) { Text(text = "Next", Modifier.padding(12.dp,0.dp)) }
+            }
         }
     }
 }
@@ -159,9 +170,23 @@ fun ArtPieceAndDescription(imageResource: Int, imageDescription: Int, imageTitle
 
 }
 
-@Preview
+@Preview(name = "Main")
 @Composable
 fun ArtSpacePreview() {
+    ArtSpaceTheme {
+        ArtSpaceLayout()
+    }
+}
+
+@Preview(
+    name = "ArtSpace Landscape Preview",
+    showBackground = true,
+    widthDp = 640, // Assuming a landscape width
+    heightDp = 360, // Assuming a landscape height
+    uiMode = Configuration.UI_MODE_TYPE_NORMAL
+)
+@Composable
+fun ArtSpaceLandscapePreview() {
     ArtSpaceTheme {
         ArtSpaceLayout()
     }
